@@ -23,11 +23,28 @@ def visualizar_contatos():
         fechar_conexoes(cur, con)
 
 
+def encontrar_contato(id_contato):
+    try:
+        con = criar_conexao()
+        cur = con.cursor()
+        sql = """SELECT * FROM contatos WHERE id_contato = %s"""
+        cur.execute(sql, (id_contato,))
+        resultados = cur.fetchall()
+        if len(resultados) < 1:
+            return False
+        else:
+            return True
+    except Exception as error:
+        print("Erro ao acessar o PostgreSQL:", error)
+    finally:
+        fechar_conexoes(cur, con)
+
+
 def adicionar_contato(contato, numero):
     try:
         con = criar_conexao()
         cur = con.cursor()
-        sql = f"""INSERT INTO contatos (nome, telefone)
+        sql = """INSERT INTO contatos (nome, telefone)
         VALUES (%s,%s)"""
         cur.execute(sql, (contato, numero))
         con.commit()
@@ -39,7 +56,7 @@ def adicionar_contato(contato, numero):
     finally:
         fechar_conexoes(cur, con)
 
-def editar_contato(id_contato, novo_contato):
+def editar_nome_contato(id_contato, novo_nome):
     try:
         con = criar_conexao()
         cur = con.cursor()
@@ -52,7 +69,7 @@ def editar_contato(id_contato, novo_contato):
             sql = """UPDATE contatos
              SET nome = %s 
              WHERE id_contato = %s"""
-            cur.execute(sql, (novo_contato, id_contato))
+            cur.execute(sql, (novo_nome, id_contato))
             con.commit()
             print('Contato modificado com sucesso!')
     except Exception as error:
@@ -61,23 +78,67 @@ def editar_contato(id_contato, novo_contato):
     finally:
         fechar_conexoes(cur, con)
 
-def remover_contato(contato):
+def editar_numero_contato(id_contato, novo_numero):
     try:
         con = criar_conexao()
         cur = con.cursor()
-        sql = """SELECT nome FROM contatos WHERE nome = %s"""
-        cur.execute(sql, (contato,))
+        sql = """SELECT nome FROM contatos WHERE id_contato = %s"""
+        cur.execute(sql, (id_contato,))
         resultados = cur.fetchall()
         if len(resultados) < 1:
             print('Contato não encontrado!')
         else:
-            sql = """DELETE FROM contatos WHERE nome = %s"""
-            cur.execute(sql, (contato,))
+            sql = """UPDATE contatos
+             SET telefone = %s 
+             WHERE id_contato = %s"""
+            cur.execute(sql, (novo_numero, id_contato))
+            con.commit()
+            print('Contato modificado com sucesso!')
+    except Exception as error:
+        print("Erro ao acessar o PostgreSQL:", error)
+    
+    finally:
+        fechar_conexoes(cur, con)
+
+
+def remover_contato(id_contato):
+    try:
+        con = criar_conexao()
+        cur = con.cursor()
+        sql = """SELECT nome FROM contatos WHERE id_contato = %s"""
+        cur.execute(sql, (id_contato,))
+        resultados = cur.fetchall()
+        if len(resultados) < 1:
+            print('Contato não encontrado!')
+        else:
+            sql = """DELETE FROM contatos WHERE id_contato = %s"""
+            cur.execute(sql, (id_contato,))
             con.commit()
             print('Contato removido com sucesso!')
 
     except Exception as error:
         print("Erro ao acessar o PostgreSQL:", error)
     
+    finally:
+        fechar_conexoes(cur, con)
+
+def remover_todos_contatos():
+    try:
+        con = criar_conexao()
+        cur = con.cursor()
+        sql = """SELECT * FROM contatos"""
+        cur.execute(sql)
+        resultados = cur.fetchall()
+        if len(resultados) < 1:
+            print('Lista vazia!')
+        else:
+            sql = """DELETE FROM contatos"""
+            cur.execute(sql)
+            con.commit()
+            print('Contatos removidos com sucesso!')
+        
+    except Exception as error:
+        print('Erro ao acessar o PostgreSQL:', error)
+
     finally:
         fechar_conexoes(cur, con)
